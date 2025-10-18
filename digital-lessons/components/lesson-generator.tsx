@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Lesson } from '@/lib/types/database';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,20 @@ export function LessonGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
+
+  const fetchLessons = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('lessons')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching lessons:', error);
+      setError('Failed to fetch lessons');
+    } else {
+      setLessons(data || []);
+    }
+  }, [supabase]);
 
   // Fetch existing lessons on mount
   useEffect(() => {
@@ -47,21 +61,7 @@ export function LessonGenerator() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
-
-  const fetchLessons = async () => {
-    const { data, error } = await supabase
-      .from('lessons')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching lessons:', error);
-      setError('Failed to fetch lessons');
-    } else {
-      setLessons(data || []);
-    }
-  };
+  }, [fetchLessons, supabase]);
 
   const handleGenerate = async () => {
     if (!outline.trim()) {
@@ -126,7 +126,7 @@ export function LessonGenerator() {
         <CardHeader>
           <CardTitle>Generate a New Lesson</CardTitle>
           <CardDescription>
-            Enter a lesson outline and we'll generate an interactive TypeScript-based lesson for you
+            Enter a lesson outline and we&apos;ll generate an interactive TypeScript-based lesson for you
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

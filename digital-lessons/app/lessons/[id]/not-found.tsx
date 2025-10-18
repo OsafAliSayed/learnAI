@@ -10,7 +10,7 @@ export default function NotFound() {
         <div className="space-y-2">
           <h1 className="text-4xl font-bold">Lesson Not Found</h1>
           <p className="text-muted-foreground">
-            The lesson you're looking for doesn't exist or may have been deleted.
+            The lesson you&apos;re looking for doesn&apos;t exist or may have been deleted.
           </p>
         </div>
         <Link href="/">

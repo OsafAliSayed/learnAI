@@ -46,7 +46,7 @@ Remember: Make it educational, interactive, and visually appealing!`;
 
 export class LessonGeneratorService {
   private model: ChatOpenAI;
-  private chain: any;
+  private chain: ReturnType<ChatPromptTemplate['pipe']>;
 
   constructor() {
     // Verify API key is present
@@ -68,7 +68,8 @@ export class LessonGeneratorService {
   async generateLesson(outline: string): Promise<{ code: string; title: string }> {
     try {
       // Generate the lesson code
-      let code = await this.chain.invoke({ outline });
+      const result = await this.chain.invoke({ outline });
+      let code = typeof result === 'string' ? result : String(result);
 
       // Clean up the code - remove markdown code blocks if present
       code = this.cleanGeneratedCode(code);
