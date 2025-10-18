@@ -66,9 +66,14 @@ export class LessonGeneratorService {
   }
 
   async generateLesson(outline: string): Promise<{ code: string; title: string }> {
+    console.log('[LessonGeneratorService] generateLesson start', { outlinePreview: outline.slice(0, 120) });
+
     try {
       // Generate the lesson code
+      console.log('[LessonGeneratorService] invoking model...');
       const result = await this.chain.invoke({ outline });
+      console.log('[LessonGeneratorService] model invoked successfully.');
+
       let code = typeof result === 'string' ? result : String(result);
 
       // Clean up the code - remove markdown code blocks if present

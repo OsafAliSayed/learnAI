@@ -11,14 +11,14 @@ const generateLessonSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Validate input
     const { outline } = generateLessonSchema.parse(body);
 
     const supabase = await createClient();
     // Extract a title from the outline
     const title = outline.split('\n')[0].trim().substring(0, 200);
-    
+
     // Create initial lesson record with 'generating' status
     const { data: lesson, error: insertError } = await supabase
       .from('lessons')
@@ -39,13 +39,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate the lesson asynchronously (don't await)
-    generateLessonInBackground(lesson.id, outline);
+    // Generate the lesson asynchronously (fire-and-forget) using a server-side
+    // background task. Prefix with `void` to explicitly detach the promise
+    // from request lifecycle so we don't accidentally await it.
+    await generateLessonInBackground(lesson.id, outline);
+    console.log(`[generate] enqueued lesson ${lesson.id} - starting background task`);
+
 
     return NextResponse.json({ lesson }, { status: 201 });
   } catch (error) {
     console.error('Error in generate endpoint:', error);
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.issues[0].message },
@@ -73,7 +77,7 @@ async function generateLessonInBackground(lessonId: string, outline: string) {
       }
     }
   );
-  
+
   try {
     const service = new LessonGeneratorService();
     const { code, title: generatedTitle } = await service.generateLesson(outline);
@@ -94,7 +98,7 @@ async function generateLessonInBackground(lessonId: string, outline: string) {
     }
   } catch (error) {
     console.error('Error generating lesson:', error);
-    
+
     // Update lesson with error status
     await supabase
       .from('lessons')
