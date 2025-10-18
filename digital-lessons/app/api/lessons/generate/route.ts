@@ -41,6 +41,8 @@ export async function POST(request: NextRequest) {
 
     // Generate the lesson asynchronously (don't await)
     generateLessonInBackground(lesson.id, outline);
+    console.log(`[generate] enqueued lesson ${lesson.id} - starting background task`);
+
 
     return NextResponse.json({ lesson }, { status: 201 });
   } catch (error) {
