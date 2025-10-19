@@ -39,9 +39,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate the lesson asynchronously (fire-and-forget) using a server-side
-    // background task. Prefix with `void` to explicitly detach the promise
-    // from request lifecycle so we don't accidentally await it.
+    // append this to queue for background processing - later on
     await generateLessonInBackground(lesson.id, outline);
     console.log(`[generate] enqueued lesson ${lesson.id} - starting background task`);
 

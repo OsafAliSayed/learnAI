@@ -2,51 +2,14 @@ import { ChatOpenAI } from '@langchain/openai';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import * as ts from 'typescript';
-
-const LESSON_GENERATION_PROMPT = `You are an expert educational content creator and TypeScript/React developer. Your task is to create an interactive, engaging lesson as a React component.
-
-**CRITICAL REQUIREMENTS:**
-1. Generate ONLY valid TypeScript/React code
-2. The component MUST be a default export function component
-3. Use ONLY React hooks (useState, useEffect, useCallback, useMemo) - they will be provided
-4. DO NOT include any import statements
-5. The component should be self-contained and interactive
-6. Use modern, clean UI with proper styling using Tailwind CSS classes
-7. Include educational content, examples, and interactive elements where appropriate
-8. For quizzes: include questions, multiple choice options, answer checking, and score tracking
-9. For explanations: include clear examples, visualizations (using HTML/CSS), and step-by-step breakdowns
-10. Make it engaging and suitable for students
-11, My website is dark themed so make sure you are using the colors that work with dark themes and light themes as well. You can use tailwindcss here 
-**LESSON OUTLINE:**
-{outline}
-
-**OUTPUT FORMAT:**
-Return ONLY the TypeScript code for the React component. No markdown, no explanations, no code blocks - just the raw TypeScript code starting with "function" or "const".
-
-**EXAMPLE STRUCTURE:**
-function LessonComponent() {{
-  const [answer, setAnswer] = useState('');
-  const [score, setScore] = useState(0);
-  
-  return (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-8 rounded-lg">
-        <h2 className="text-3xl font-bold mb-2">Lesson Title</h2>
-        <p className="text-lg opacity-90">Lesson description</p>
-      </div>
-      
-      {{/* Interactive content here */}}
-    </div>
-  );
-}}
-
-export default LessonComponent;
-
-Remember: Make it educational, interactive, and visually appealing!`;
+import { PROMPT_ENHANCER, LESSON_GENERATION_PROMPT, TEACHING_PROMPT, EXERCISE_PROMPT } from './lesson-prompts';
 
 export class LessonGeneratorService {
   private model: ChatOpenAI;
-  private chain: ReturnType<ChatPromptTemplate['pipe']>;
+  private enhancerChain: ReturnType<ChatPromptTemplate['pipe']>;
+  private generatorChain: ReturnType<ChatPromptTemplate['pipe']>;
+  private teachingChain: ReturnType<ChatPromptTemplate['pipe']>;
+  private exerciseChain: ReturnType<ChatPromptTemplate['pipe']>;
 
   constructor() {
     // Verify API key is present
@@ -61,26 +24,51 @@ export class LessonGeneratorService {
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
 
-    const prompt = ChatPromptTemplate.fromTemplate(LESSON_GENERATION_PROMPT);
-    this.chain = prompt.pipe(this.model).pipe(new StringOutputParser());
+    // Create separate chains for enhancing prompts and generating content
+    const enhancerPrompt = ChatPromptTemplate.fromTemplate(PROMPT_ENHANCER);
+    this.enhancerChain = enhancerPrompt.pipe(this.model).pipe(new StringOutputParser());
+
+    const generatorPrompt = ChatPromptTemplate.fromTemplate(LESSON_GENERATION_PROMPT);
+    this.generatorChain = generatorPrompt.pipe(this.model).pipe(new StringOutputParser());
+    
+    // New chains for separated teaching and exercise generation
+    const teachingPrompt = ChatPromptTemplate.fromTemplate(TEACHING_PROMPT);
+    this.teachingChain = teachingPrompt.pipe(this.model).pipe(new StringOutputParser());
+    
+    const exercisePrompt = ChatPromptTemplate.fromTemplate(EXERCISE_PROMPT);
+    this.exerciseChain = exercisePrompt.pipe(this.model).pipe(new StringOutputParser());
   }
 
-  async generateLesson(outline: string): Promise<{ code: string; title: string }> {
-    console.log('[LessonGeneratorService] generateLesson start', { outlinePreview: outline.slice(0, 120) });
+  async generateLesson(userInput: string): Promise<{ code: string; title: string }> {
+    console.log('[LessonGeneratorService] generateLesson start', { userInputPreview: userInput.slice(0, 120) });
 
     try {
-      // Generate the lesson code
-      console.log('[LessonGeneratorService] invoking model...');
-      const result = await this.chain.invoke({ outline });
-      console.log('[LessonGeneratorService] model invoked successfully.');
+      // Step 1: Enhance the user's input into a comprehensive lesson outline
+      console.log('[LessonGeneratorService] Step 1: Enhancing user input...');
+      const enhancedOutline = await this.enhancerChain.invoke({ userInput });
+      console.log('[LessonGeneratorService] Enhanced outline generated successfully.');
+      console.log('[LessonGeneratorService] Enhanced outline preview:', 
+        typeof enhancedOutline === 'string' 
+          ? enhancedOutline.slice(0, 200) 
+          : String(enhancedOutline).slice(0, 200)
+      );
+
+      // Step 2: Generate the lesson code using the enhanced outline
+      console.log('[LessonGeneratorService] Step 2: Generating lesson code...');
+      const result = await this.generatorChain.invoke({ 
+        outline: typeof enhancedOutline === 'string' ? enhancedOutline : String(enhancedOutline) 
+      });
+      console.log('[LessonGeneratorService] Lesson code generated successfully.');
 
       let code = typeof result === 'string' ? result : String(result);
 
       // Clean up the code - remove markdown code blocks if present
       code = this.cleanGeneratedCode(code);
 
-      // Extract title from the outline or generate one
-      const title = this.extractTitle(outline);
+      // Extract title from the enhanced outline
+      const title = this.extractTitle(
+        typeof enhancedOutline === 'string' ? enhancedOutline : String(enhancedOutline)
+      );
 
       // Validate the generated TypeScript
       this.validateTypeScript(code);
@@ -107,6 +95,89 @@ export class LessonGeneratorService {
       throw new Error(
         `Failed to generate lesson: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
+    }
+  }
+  
+  async generateTeachingComponent(userInput: string): Promise<{ code: string; title: string; outline: string }> {
+    console.log('[LessonGeneratorService] generateTeachingComponent start', { userInputPreview: userInput.slice(0, 120) });
+
+    try {
+      // Step 1: Enhance the user's input into a comprehensive lesson outline
+      console.log('[LessonGeneratorService] Step 1: Enhancing user input...');
+      const enhancedOutline = await this.enhancerChain.invoke({ userInput });
+      console.log('[LessonGeneratorService] Enhanced outline generated successfully.');
+      
+      // Step 2: Generate the teaching component code using the enhanced outline
+      console.log('[LessonGeneratorService] Step 2: Generating teaching component code...');
+      const result = await this.teachingChain.invoke({ 
+        outline: typeof enhancedOutline === 'string' ? enhancedOutline : String(enhancedOutline) 
+      });
+      console.log('[LessonGeneratorService] Teaching component code generated successfully.');
+
+      let code = typeof result === 'string' ? result : String(result);
+
+      // Clean up the code - remove markdown code blocks if present
+      code = this.cleanGeneratedCode(code);
+
+      // Extract title from the enhanced outline
+      const title = this.extractTitle(
+        typeof enhancedOutline === 'string' ? enhancedOutline : String(enhancedOutline)
+      );
+
+      // Validate the generated TypeScript
+      this.validateTypeScript(code);
+
+      const outlineString = typeof enhancedOutline === 'string' ? enhancedOutline : String(enhancedOutline);
+      return { code, title, outline: outlineString };
+    } catch (error) {
+      console.error('Error generating teaching component:', error);
+      this.handleApiError(error);
+      throw new Error(
+        `Failed to generate teaching component: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  async generateExercisesComponent(outline: string): Promise<{ code: string }> {
+    console.log('[LessonGeneratorService] generateExercisesComponent start');
+
+    try {
+      // Generate the exercise component code using the provided outline
+      console.log('[LessonGeneratorService] Generating exercise component code...');
+      const result = await this.exerciseChain.invoke({ outline });
+      console.log('[LessonGeneratorService] Exercise component code generated successfully.');
+
+      let code = typeof result === 'string' ? result : String(result);
+
+      // Clean up the code - remove markdown code blocks if present
+      code = this.cleanGeneratedCode(code);
+
+      // Validate the generated TypeScript
+      this.validateTypeScript(code);
+
+      return { code };
+    } catch (error) {
+      console.error('Error generating exercise component:', error);
+      this.handleApiError(error);
+      throw new Error(
+        `Failed to generate exercise component: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+  
+  private handleApiError(error: unknown): void {
+    if (error instanceof Error) {
+      if (error.message.includes('403') || error.message.includes('Forbidden')) {
+        throw new Error(
+          'OpenAI API access denied. Please check: 1) API key is valid, 2) Account has billing enabled, 3) You have access to GPT-4o model'
+        );
+      }
+      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+        throw new Error('Invalid OpenAI API key. Please check your OPENAI_API_KEY environment variable');
+      }
+      if (error.message.includes('429') || error.message.includes('rate limit')) {
+        throw new Error('OpenAI API rate limit exceeded. Please try again in a few moments');
+      }
     }
   }
 
