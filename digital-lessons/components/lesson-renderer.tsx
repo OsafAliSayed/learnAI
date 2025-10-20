@@ -62,188 +62,19 @@ export function LessonRenderer({ code }: LessonRendererProps) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Load Tailwind CSS from CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Configure Tailwind with dark mode support
+    tailwind.config = {
+      darkMode: 'media',
+      theme: {
+        extend: {}
+      }
+    }
+  </script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      padding: 1.5rem;
-      line-height: 1.6;
-      color: #1f2937;
-    }
-    
-    h1, h2, h3, h4, h5, h6 {
-      margin-bottom: 1rem;
-      font-weight: 600;
-      line-height: 1.3;
-    }
-    
-    h1 { font-size: 2rem; }
-    h2 { font-size: 1.5rem; }
-    h3 { font-size: 1.25rem; }
-    
-    p {
-      margin-bottom: 1rem;
-    }
-    
-    button {
-      background-color: #3b82f6;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 500;
-      transition: background-color 0.2s;
-    }
-    
-    button:hover {
-      background-color: #2563eb;
-    }
-    
-    button:disabled {
-      background-color: #9ca3af;
-      cursor: not-allowed;
-    }
-    
-    input[type="text"],
-    input[type="number"],
-    textarea {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.375rem;
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-    }
-    
-    input:focus,
-    textarea:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    
-    .question {
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      background-color: #f9fafb;
-      border-radius: 0.5rem;
-      border-left: 4px solid #3b82f6;
-    }
-    
-    .option {
-      display: block;
-      padding: 0.75rem;
-      margin-bottom: 0.5rem;
-      background-color: white;
-      border: 2px solid #e5e7eb;
-      border-radius: 0.375rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .option:hover {
-      border-color: #3b82f6;
-      background-color: #eff6ff;
-    }
-    
-    .option.selected {
-      border-color: #3b82f6;
-      background-color: #dbeafe;
-    }
-    
-    .option.correct {
-      border-color: #10b981;
-      background-color: #d1fae5;
-    }
-    
-    .option.incorrect {
-      border-color: #ef4444;
-      background-color: #fee2e2;
-    }
-    
-    .result {
-      padding: 1rem;
-      border-radius: 0.5rem;
-      margin-top: 1rem;
-      font-weight: 500;
-    }
-    
-    .result.correct {
-      background-color: #d1fae5;
-      color: #065f46;
-      border: 1px solid #10b981;
-    }
-    
-    .result.incorrect {
-      background-color: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #ef4444;
-    }
-    
-    .score {
-      font-size: 1.5rem;
-      font-weight: 700;
-      text-align: center;
-      padding: 1.5rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border-radius: 0.5rem;
-      margin: 1rem 0;
-    }
-    
-    .grid {
-      display: grid;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-    
-    .card {
-      padding: 1rem;
-      background-color: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-    
-    code {
-      background-color: #f3f4f6;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.25rem;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9em;
-    }
-    
-    pre {
-      background-color: #1f2937;
-      color: #f9fafb;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      overflow-x: auto;
-      margin-bottom: 1rem;
-    }
-    
-    pre code {
-      background-color: transparent;
-      padding: 0;
-      color: inherit;
-    }
-    
-    ul, ol {
-      margin-left: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    
-    li {
-      margin-bottom: 0.5rem;
-    }
-    
+    /* Minimal base styles */
     .error {
       background-color: #fee2e2;
       border: 1px solid #ef4444;
@@ -253,41 +84,13 @@ export function LessonRenderer({ code }: LessonRendererProps) {
       margin-bottom: 1rem;
     }
     
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #1f2937;
-        color: #f9fafb;
-      }
-      
-      .question {
-        background-color: #374151;
-      }
-      
-      .option {
-        background-color: #374151;
-        border-color: #4b5563;
-      }
-      
-      .option:hover {
-        background-color: #4b5563;
-      }
-      
-      .card {
-        background-color: #374151;
-        border-color: #4b5563;
-      }
-      
-      input[type="text"],
-      input[type="number"],
-      textarea {
-        background-color: #374151;
-        border-color: #4b5563;
-        color: #f9fafb;
-      }
+    /* Ensure proper padding and spacing */
+    body {
+      padding: 1.5rem;
     }
   </style>
 </head>
-<body>
+<body class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100">
   <div id="root"></div>
   
   <!-- Load React and ReactDOM from CDN -->
