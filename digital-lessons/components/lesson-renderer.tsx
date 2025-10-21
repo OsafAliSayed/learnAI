@@ -130,21 +130,9 @@ export function LessonRenderer({ code }: LessonRendererProps) {
         // Make React available globally
         const { useState, useEffect, useCallback, useMemo } = React;
         
-        // Create a fake exports object to prevent errors
-        const exports = {};
-        const module = { exports: exports };
-        
-        // Load exercise components
+        // Load exercise components - they will attach to window directly
         ${componentsBundle}
         
-        // If components were assigned to exports, move them to window
-        if (exports.default) {
-          Object.keys(exports).forEach(key => {
-            if (key !== '__esModule' && exports[key]) {
-              window[key] = exports[key];
-            }
-          });
-        }
       } catch (err) {
         console.error('Error loading exercise components:', err);
         throw new Error('Failed to load exercise components: ' + err.message);
