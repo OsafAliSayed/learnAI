@@ -22,7 +22,6 @@ export function LessonRenderer({ code }: LessonRendererProps) {
 
         // Clean and transform the TypeScript code
         let transformedCode = code.trim();
-        console.log ("transformedCode:", transformedCode);
         // Remove import statements
         transformedCode = transformedCode
           .replace(/^import\s+.*from\s+['"]react['"];?\n?/gm, '')
@@ -79,7 +78,6 @@ export function LessonRenderer({ code }: LessonRendererProps) {
         }
         const componentsBundle = await componentsResponse.text();
         
-        console.log("componentsBundle:", componentsBundle);
         // Create the iframe HTML document
         const iframeHTML = `
 <!DOCTYPE html>
