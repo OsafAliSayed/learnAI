@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // append this to queue for background processing - later on
     await generateLessonInBackground(lesson.id, outline);
     console.log(`[generate] enqueued lesson ${lesson.id} - starting background task`);
 
