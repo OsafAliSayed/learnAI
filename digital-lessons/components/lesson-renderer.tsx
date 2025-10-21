@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import * as ts from 'typescript';
+import { LessonComponents } from './exercises/LessonComponents';
 
 interface LessonRendererProps {
   code: string;
@@ -54,7 +55,14 @@ export function LessonRenderer({ code }: LessonRendererProps) {
         });
 
         const jsCode = transpiled.outputText;
-
+        
+        // Fetch exercise components bundle from API
+        const componentsResponse = await fetch('/api/exercise-components');
+        if (!componentsResponse.ok) {
+          throw new Error(`Failed to fetch exercise components: ${componentsResponse.status} ${componentsResponse.statusText}`);
+        }
+        const componentsBundle = await componentsResponse.text();
+        
         // Create the iframe HTML document
         const iframeHTML = `
 <!DOCTYPE html>
@@ -96,6 +104,36 @@ export function LessonRenderer({ code }: LessonRendererProps) {
   <!-- Load React and ReactDOM from CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Inject Exercise Components -->
+  <script>
+    (function() {
+      'use strict';
+      try {
+        // Make React available globally
+        const { useState, useEffect, useCallback, useMemo } = React;
+        
+        // Create a fake exports object to prevent errors
+        const exports = {};
+        const module = { exports: exports };
+        
+        // Load exercise components
+        ${componentsBundle}
+        
+        // If components were assigned to exports, move them to window
+        if (exports.default) {
+          Object.keys(exports).forEach(key => {
+            if (key !== '__esModule' && exports[key]) {
+              window[key] = exports[key];
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Error loading exercise components:', err);
+        throw new Error('Failed to load exercise components: ' + err.message);
+      }
+    })();
+  </script>
   
   <script>
     (function() {
