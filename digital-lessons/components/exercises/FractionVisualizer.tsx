@@ -50,7 +50,6 @@ export default function FractionVisualizer({
 
   // Calculate colors for filled sections
   const sections = Array.from({ length: denom }, (_, i) => i);
-  const filledSections = sections.slice(0, num);
 
   return (
     <div className="space-y-4">

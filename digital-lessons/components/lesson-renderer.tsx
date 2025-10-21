@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import * as ts from 'typescript';
-import { LessonComponents } from './exercises/LessonComponents';
 
 interface LessonRendererProps {
   code: string;
@@ -23,23 +22,40 @@ export function LessonRenderer({ code }: LessonRendererProps) {
 
         // Clean and transform the TypeScript code
         let transformedCode = code.trim();
-
+        console.log ("transformedCode:", transformedCode);
         // Remove import statements
         transformedCode = transformedCode
           .replace(/^import\s+.*from\s+['"]react['"];?\n?/gm, '')
           .replace(/^import\s+.*from\s+['"].*['"];?\n?/gm, '');
 
         // Handle different export patterns
-        const exportDefaultMatch = transformedCode.match(/^export\s+default\s+(\w+);?\s*$/m);
-
-        if (exportDefaultMatch) {
-          const componentName = exportDefaultMatch[1];
+        let componentName = 'LessonComponent';
+        
+        const funcExportMatch = transformedCode.match(/export\s+default\s+function\s+(\w+)/);
+        if (funcExportMatch) {
+          componentName = funcExportMatch[1];
+          transformedCode = transformedCode.replace(/export\s+default\s+function\s+\w+/, `function ${componentName}`);
+        }
+        
+        // Check for: export default ComponentName;
+        const namedExportMatch = transformedCode.match(/export\s+default\s+(\w+);?\s*$/m);
+        if (namedExportMatch) {
+          componentName = namedExportMatch[1];
           transformedCode = transformedCode.replace(/^export\s+default\s+\w+;?\s*$/m, '');
+        }
+        
+        // Check for: export default (props) => ... or export default () => ...
+        const arrowExportMatch = transformedCode.match(/export\s+default\s+(\([^)]*\)\s*=>|\w+\s*=>)/);
+        if (arrowExportMatch) {
+          transformedCode = transformedCode.replace(/export\s+default\s+/, `const ${componentName} = `);
+        }
+        
+        // Remove any remaining export default statements
+        transformedCode = transformedCode.replace(/^export\s+default\s+/gm, '');
+        
+        // Ensure component is assigned to window
+        if (!transformedCode.includes('window.__LESSON_COMPONENT__')) {
           transformedCode = transformedCode.trim() + `\n\nwindow.__LESSON_COMPONENT__ = ${componentName};`;
-        } else {
-          transformedCode = transformedCode
-            .replace(/^export\s+default\s+function/, 'function')
-            .replace(/^export\s+default\s+/, 'window.__LESSON_COMPONENT__ = ');
         }
 
         // Transpile TypeScript to JavaScript
@@ -63,6 +79,7 @@ export function LessonRenderer({ code }: LessonRendererProps) {
         }
         const componentsBundle = await componentsResponse.text();
         
+        console.log("componentsBundle:", componentsBundle);
         // Create the iframe HTML document
         const iframeHTML = `
 <!DOCTYPE html>

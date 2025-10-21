@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 interface ExerciseInputProps {
   value: string;
   onChange: (value: string) => void;

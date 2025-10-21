@@ -113,7 +113,7 @@ export default function ClockVisualizer({
           })}
 
           {/* Numbers */}
-          {[12, 3, 6, 9].map((num, i) => {
+          {[12, 3, 6, 9].map((num) => {
             const angle = ((num === 12 ? 0 : num * 30) - 90) * (Math.PI / 180);
             const x = center + (radius - 40) * Math.cos(angle);
             const y = center + (radius - 40) * Math.sin(angle);
