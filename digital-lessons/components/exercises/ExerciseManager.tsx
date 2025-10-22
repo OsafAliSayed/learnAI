@@ -64,22 +64,15 @@ export default function ExerciseManager({
 }: ExerciseManagerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
   const [showFeedback, setShowFeedback] = useState<Record<string, boolean>>({});
   const [completed, setCompleted] = useState(false);
 
   const currentExercise = exercises[currentIndex];
   const totalExercises = exercises.length;
 
-  const handleAnswer = useCallback((exerciseId: string, isCorrect: number, userAnswer?: any) => {
+  const handleAnswer = useCallback((exerciseId: string, isCorrect: number) => {
     // Update score
     setScore(prev => prev + isCorrect);
-    
-    // Store answer
-    setAnswers(prev => ({
-      ...prev,
-      [exerciseId]: userAnswer,
-    }));
     
     // Show feedback
     setShowFeedback(prev => ({
@@ -102,7 +95,6 @@ export default function ExerciseManager({
   const handleRetry = () => {
     setCurrentIndex(0);
     setScore(0);
-    setAnswers({});
     setShowFeedback({});
     setCompleted(false);
   };
@@ -176,7 +168,7 @@ export default function ExerciseManager({
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg space-y-4" key={currentExercise?.id}>
         {currentExercise && renderExercise(
           currentExercise,
-          (isCorrect, userAnswer) => handleAnswer(currentExercise.id, isCorrect, userAnswer),
+          (isCorrect) => handleAnswer(currentExercise.id, isCorrect),
           showFeedback[currentExercise.id] || false
         )}
         
@@ -199,7 +191,7 @@ export default function ExerciseManager({
 // Helper function to render the appropriate exercise component
 function renderExercise(
   exercise: Exercise,
-  onAnswer: (isCorrect: number, userAnswer?: any) => void,
+  onAnswer: (isCorrect: number) => void,
   showFeedback: boolean
 ) {
   const { type, question, options, correctAnswer, explanation, placeholder, pairs, config } = exercise;
@@ -211,7 +203,7 @@ function renderExercise(
       }
       return (
         <MultipleChoiceQuestion
-          question={question}
+          question={question || ''}
           options={options}
           correctAnswer={correctAnswer}
           explanation={explanation}
@@ -226,7 +218,7 @@ function renderExercise(
       }
       return (
         <TrueFalseQuestion
-          question={question}
+          question={question || ''}
           correctAnswer={correctAnswer}
           explanation={explanation}
           onAnswer={onAnswer}
@@ -274,7 +266,7 @@ function renderExercise(
           correctValue={correctAnswer}
           onChange={(value: number) => {
             const isCorrect = value === correctAnswer ? 1 : 0;
-            onAnswer(isCorrect, value);
+            onAnswer(isCorrect);
           }}
           showFeedback={showFeedback}
         />
@@ -294,7 +286,7 @@ function renderExercise(
           correctPoint={config.correctPoint}
           onPointSelect={(point: { x: number; y: number }) => {
             const isCorrect = point.x === config.correctPoint!.x && point.y === config.correctPoint!.y ? 1 : 0;
-            onAnswer(isCorrect, point);
+            onAnswer(isCorrect);
           }}
           showFeedback={showFeedback}
         />
@@ -311,7 +303,7 @@ function renderExercise(
           correctDenominator={config.correctDenominator}
           onFractionChange={(num: number, den: number) => {
             const isCorrect = num === config.correctNumerator && den === config.correctDenominator ? 1 : 0;
-            onAnswer(isCorrect, { numerator: num, denominator: den });
+            onAnswer(isCorrect);
           }}
           showFeedback={showFeedback}
           interactive={true}
@@ -328,7 +320,7 @@ function renderExercise(
           correctMinutes={config.correctMinutes}
           onTimeChange={(hours: number, minutes: number) => {
             const isCorrect = hours === config.correctHours && minutes === config.correctMinutes ? 1 : 0;
-            onAnswer(isCorrect, { hours, minutes });
+            onAnswer(isCorrect);
           }}
           showFeedback={showFeedback}
           interactive={true}
