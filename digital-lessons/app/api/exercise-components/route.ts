@@ -19,6 +19,8 @@ export async function GET() {
       'CartesianPlane.tsx',
       'FractionVisualizer.tsx',
       'ClockVisualizer.tsx',
+      'ExerciseManager.tsx',
+      'LessonManager.tsx',
     ];
 
     let bundledCode = '';
