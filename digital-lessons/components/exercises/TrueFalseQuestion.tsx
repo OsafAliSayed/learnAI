@@ -6,7 +6,7 @@ interface TrueFalseQuestionProps {
   question: string;
   correctAnswer: boolean;
   explanation?: string;
-  onAnswer?: (isCorrect: boolean, selectedAnswer: boolean) => void;
+  onAnswer?: (isCorrect: number, selectedAnswer: boolean) => void; // Returns 1 for correct, 0 for incorrect
   showFeedback?: boolean;
   disabled?: boolean;
   questionNumber?: number;
@@ -30,7 +30,7 @@ export default function TrueFalseQuestion({
     setSelectedAnswer(answer);
     setHasAnswered(true);
 
-    const isCorrect = answer === correctAnswer;
+    const isCorrect = answer === correctAnswer ? 1 : 0;
 
     if (onAnswer) {
       onAnswer(isCorrect, answer);

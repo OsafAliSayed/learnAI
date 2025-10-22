@@ -25,6 +25,7 @@ export default function FractionVisualizer({
 }: FractionVisualizerProps) {
   const [num, setNum] = useState(numerator);
   const [denom, setDenom] = useState(denominator);
+  const [hasAnswered, setHasAnswered] = useState(false);
 
   const isCorrect = showFeedback && correctNumerator !== undefined && correctDenominator !== undefined
     ? num === correctNumerator && denom === correctDenominator
@@ -33,6 +34,9 @@ export default function FractionVisualizer({
   const handleNumeratorChange = (value: number) => {
     const newNum = Math.max(0, Math.min(value, denom));
     setNum(newNum);
+    if (!hasAnswered) {
+      setHasAnswered(true);
+    }
     if (onFractionChange) {
       onFractionChange(newNum, denom);
     }
@@ -43,9 +47,18 @@ export default function FractionVisualizer({
     setDenom(newDenom);
     const newNum = Math.min(num, newDenom);
     setNum(newNum);
+    if (!hasAnswered) {
+      setHasAnswered(true);
+    }
     if (onFractionChange) {
       onFractionChange(newNum, newDenom);
     }
+  };
+
+  const handleRetry = () => {
+    setNum(numerator);
+    setDenom(denominator);
+    setHasAnswered(false);
   };
 
   // Calculate colors for filled sections
@@ -129,14 +142,22 @@ export default function FractionVisualizer({
               <span>Correct fraction!</span>
             </div>
           ) : (
-            <div className="text-red-600 dark:text-red-400 font-semibold">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <span className="text-2xl">✗</span>
-                <span>Try again!</span>
+            <div className="space-y-3">
+              <div className="text-red-600 dark:text-red-400 font-semibold">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-2xl">✗</span>
+                  <span>Try again!</span>
+                </div>
+                <p className="text-sm">
+                  The correct fraction is {correctNumerator}/{correctDenominator}
+                </p>
               </div>
-              <p className="text-sm">
-                The correct fraction is {correctNumerator}/{correctDenominator}
-              </p>
+              <button
+                onClick={handleRetry}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200 hover:scale-105 shadow-md"
+              >
+                🔄 Try Again
+              </button>
             </div>
           )}
         </div>

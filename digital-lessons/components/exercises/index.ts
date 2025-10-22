@@ -17,3 +17,9 @@ export { default as ClockVisualizer } from './ClockVisualizer';
 export { default as DragDropMatcher } from './DragDropMatcher';
 export { default as ProgressTracker } from './ProgressTracker';
 
+// Manager components
+export { default as ExerciseManager } from './ExerciseManager';
+export type { Exercise } from './ExerciseManager';
+
+export { default as LessonManager } from './LessonManager';
+export type { LessonConcept } from './LessonManager';
