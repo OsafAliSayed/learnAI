@@ -14,8 +14,8 @@ interface ClockVisualizerProps {
 }
 
 export default function ClockVisualizer({
-  hours = 3,
-  minutes = 30,
+  hours = 0,
+  minutes = 0,
   onTimeChange,
   correctHours,
   correctMinutes,
@@ -72,7 +72,7 @@ export default function ClockVisualizer({
           {label}
         </h3>
         <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-          {currentHours.toString().padStart(2, '0')}:{currentMinutes.toString().padStart(2, '0')}
+          {(currentHours === 0 ? 12 : currentHours).toString().padStart(2, '0')}:{currentMinutes.toString().padStart(2, '0')}
         </div>
       </div>
 
@@ -164,7 +164,7 @@ export default function ClockVisualizer({
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Hours: {currentHours}
+              Hours: {currentHours === 0 ? 12 : currentHours}
             </label>
             <input
               type="range"
@@ -206,7 +206,7 @@ export default function ClockVisualizer({
                 <span>Try again!</span>
               </div>
               <p className="text-sm">
-                The correct time is {correctHours?.toString().padStart(2, '0')}:{correctMinutes?.toString().padStart(2, '0')}
+                The correct time is {(correctHours === 0 ? 12 : correctHours)?.toString().padStart(2, '0')}:{correctMinutes?.toString().padStart(2, '0')}
               </p>
             </div>
           )}

@@ -16,9 +16,14 @@ interface CartesianPlaneProps {
   selectedPoint?: Point | null;
   onPointSelect?: (point: Point) => void;
   correctPoint?: Point;
+  validatePoint?: (point: Point) => boolean; // Custom validation function
   showFeedback?: boolean;
   label?: string;
   showCoordinates?: boolean;
+  feedbackMessage?: {
+    correct?: string;
+    incorrect?: string;
+  };
 }
 
 export default function CartesianPlane({
@@ -30,11 +35,14 @@ export default function CartesianPlane({
   selectedPoint: externalSelectedPoint,
   onPointSelect,
   correctPoint,
+  validatePoint,
   showFeedback = false,
   label = 'Cartesian Plane',
   showCoordinates = true,
+  feedbackMessage,
 }: CartesianPlaneProps) {
   const [internalSelectedPoint, setInternalSelectedPoint] = useState<Point | null>(null);
+  const [hasAnswered, setHasAnswered] = useState(false);
   const selectedPoint = externalSelectedPoint !== undefined ? externalSelectedPoint : internalSelectedPoint;
   
   const width = 500;
@@ -53,6 +61,8 @@ export default function CartesianPlane({
   const fromScreenY = (screenY: number) => Math.round(maxY - ((screenY - padding) / plotHeight) * yRange);
 
   const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (hasAnswered && isCorrect) return; // Don't allow changes if already correct
+    
     const svg = e.currentTarget;
     const rect = svg.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -67,13 +77,28 @@ export default function CartesianPlane({
       setInternalSelectedPoint(point);
     }
     
+    if (!hasAnswered) {
+      setHasAnswered(true);
+    }
+    
     if (onPointSelect) {
       onPointSelect(point);
     }
   };
 
-  const isCorrect = showFeedback && correctPoint && selectedPoint 
-    ? selectedPoint.x === correctPoint.x && selectedPoint.y === correctPoint.y
+  const handleRetry = () => {
+    setInternalSelectedPoint(null);
+    setHasAnswered(false);
+  };
+
+  // Determine if the answer is correct
+  // If validatePoint function is provided, use it; otherwise compare with correctPoint
+  const isCorrect = showFeedback && selectedPoint
+    ? validatePoint 
+      ? validatePoint(selectedPoint)
+      : correctPoint
+        ? selectedPoint.x === correctPoint.x && selectedPoint.y === correctPoint.y
+        : undefined
     : undefined;
 
   // Generate grid lines
@@ -205,19 +230,6 @@ export default function CartesianPlane({
               className="animate-pulse"
             />
           )}
-
-          {/* Correct point indicator (when feedback is shown and answer is wrong) */}
-          {showFeedback && correctPoint && !isCorrect && (
-            <circle
-              cx={toScreenX(correctPoint.x)}
-              cy={toScreenY(correctPoint.y)}
-              r={8}
-              fill="none"
-              stroke="#22c55e"
-              strokeWidth={3}
-              className="animate-pulse"
-            />
-          )}
         </svg>
 
         {/* Feedback */}
@@ -226,19 +238,27 @@ export default function CartesianPlane({
             {isCorrect ? (
               <div className="text-green-600 dark:text-green-400 font-semibold flex items-center justify-center gap-2">
                 <span className="text-2xl">✓</span>
-                <span>Perfect! You selected the correct point!</span>
+                <span>{feedbackMessage?.correct || 'Perfect! You selected the correct point!'}</span>
               </div>
             ) : isCorrect === false ? (
-              <div className="text-red-600 dark:text-red-400 font-semibold">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-2xl">✗</span>
-                  <span>Not quite right. Try again!</span>
+              <div className="space-y-3">
+                <div className="text-red-600 dark:text-red-400 font-semibold">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-2xl">✗</span>
+                    <span>{feedbackMessage?.incorrect || 'Not quite right. Try again!'}</span>
+                  </div>
+                  {correctPoint && !validatePoint && (
+                    <p className="text-sm">
+                      The correct point is ({correctPoint.x}, {correctPoint.y})
+                    </p>
+                  )}
                 </div>
-                {correctPoint && (
-                  <p className="text-sm">
-                    The correct point is ({correctPoint.x}, {correctPoint.y})
-                  </p>
-                )}
+                <button
+                  onClick={handleRetry}
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200 hover:scale-105 shadow-md"
+                >
+                  🔄 Try Again
+                </button>
               </div>
             ) : null}
           </div>
@@ -246,7 +266,10 @@ export default function CartesianPlane({
       </div>
 
       <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-        Click anywhere on the plane to select a point
+        {hasAnswered && isCorrect ? 
+          "Correct! Click 'Next Question' to continue." : 
+          "Click anywhere on the plane to select a point"
+        }
       </div>
     </div>
   );

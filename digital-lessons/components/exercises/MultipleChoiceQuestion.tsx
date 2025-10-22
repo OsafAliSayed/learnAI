@@ -12,7 +12,7 @@ interface MultipleChoiceQuestionProps {
   options: MultipleChoiceOption[];
   correctAnswer: string;
   explanation?: string;
-  onAnswer?: (isCorrect: boolean, selectedAnswer: string) => void;
+  onAnswer?: (isCorrect: number, selectedAnswer: string) => void; // Returns 1 for correct, 0 for incorrect
   showFeedback?: boolean;
   disabled?: boolean;
   questionNumber?: number;
@@ -37,7 +37,7 @@ export default function MultipleChoiceQuestion({
     setSelectedAnswer(optionId);
     setHasAnswered(true);
     
-    const isCorrect = optionId === correctAnswer;
+    const isCorrect = optionId === correctAnswer ? 1 : 0;
     
     if (onAnswer) {
       onAnswer(isCorrect, optionId);

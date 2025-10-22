@@ -14,7 +14,7 @@ interface MatchingPair {
 
 interface DragDropMatcherProps {
   pairs: MatchingPair[];
-  onComplete?: (isCorrect: boolean) => void;
+  onComplete?: (isCorrect: number) => void; // Returns 1 for correct, 0 for incorrect
   showFeedback?: boolean;
   label?: string;
 }
@@ -54,7 +54,8 @@ export default function DragDropMatcher({
 
     // Check if all items are matched
     if (Object.keys(newMatches).length === pairs.length && onComplete) {
-      const isCorrect = pairs.every(pair => newMatches[pair.left.id] === pair.right.id);
+      const allCorrect = pairs.every(pair => newMatches[pair.left.id] === pair.right.id);
+      const isCorrect = allCorrect ? 1 : 0;
       setTimeout(() => onComplete(isCorrect), 500);
     }
   };
@@ -92,7 +93,8 @@ export default function DragDropMatcher({
 
     // Check if all items are matched
     if (Object.keys(newMatches).length === pairs.length && onComplete) {
-      const isCorrect = pairs.every(pair => newMatches[pair.left.id] === pair.right.id);
+      const allCorrect = pairs.every(pair => newMatches[pair.left.id] === pair.right.id);
+      const isCorrect = allCorrect ? 1 : 0;
       setTimeout(() => onComplete(isCorrect), 500);
     }
   };
@@ -107,6 +109,12 @@ export default function DragDropMatcher({
 
   const isRightItemMatched = (rightId: string) => {
     return Object.values(matches).includes(rightId);
+  };
+
+  const handleRetry = () => {
+    setMatches({});
+    setSelectedLeft(null);
+    setDraggedItem(null);
   };
 
   return (
@@ -207,11 +215,19 @@ export default function DragDropMatcher({
               <span>Perfect! All matches are correct!</span>
             </div>
           ) : (
-            <div className="text-red-600 dark:text-red-400 font-semibold">
-              <div className="flex items-center justify-center gap-2 mb-2 text-lg">
-                <span className="text-2xl">✗</span>
-                <span>Some matches are incorrect. Review the highlighted items.</span>
+            <div className="space-y-3">
+              <div className="text-red-600 dark:text-red-400 font-semibold">
+                <div className="flex items-center justify-center gap-2 mb-2 text-lg">
+                  <span className="text-2xl">✗</span>
+                  <span>Some matches are incorrect. Review the highlighted items.</span>
+                </div>
               </div>
+              <button
+                onClick={handleRetry}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200 hover:scale-105 shadow-md"
+              >
+                🔄 Try Again
+              </button>
             </div>
           )}
         </div>

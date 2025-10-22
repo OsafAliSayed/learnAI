@@ -10,6 +10,7 @@ interface NumberLineProps {
   onChange?: (value: number) => void;
   correctValue?: number;
   showFeedback?: boolean;
+  onAnswer?: (isCorrect: number, selectedValue: number) => void; // Returns 1 for correct, 0 for incorrect
   label?: string;
   showMarkers?: boolean;
 }
@@ -22,10 +23,12 @@ export default function NumberLine({
   onChange,
   correctValue,
   showFeedback = false,
+  onAnswer,
   label = 'Number Line',
   showMarkers = true,
 }: NumberLineProps) {
   const [selectedValue, setSelectedValue] = useState<number | null>(value ?? null);
+  const [hasAnswered, setHasAnswered] = useState(false);
   const range = max - min;
   const markers = [];
 
@@ -34,9 +37,18 @@ export default function NumberLine({
   }
 
   const handleClick = (val: number) => {
+    if (hasAnswered) return;
+    
     setSelectedValue(val);
     if (onChange) {
       onChange(val);
+    }
+    
+    // Auto-submit if onAnswer is provided
+    if (onAnswer && correctValue !== undefined) {
+      setHasAnswered(true);
+      const isCorrect = val === correctValue ? 1 : 0;
+      onAnswer(isCorrect, val);
     }
   };
 
