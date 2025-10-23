@@ -23,15 +23,22 @@ export default function ClockVisualizer({
   label = 'Clock',
   interactive = true,
 }: ClockVisualizerProps) {
-  const [currentHours, setCurrentHours] = useState(hours);
+  // Convert 24-hour to 12-hour for display
+  const [currentHours, setCurrentHours] = useState(hours > 12 ? hours - 12 : hours === 0 ? 12 : hours);
   const [currentMinutes, setCurrentMinutes] = useState(minutes);
 
-  const isCorrect = showFeedback && correctHours !== undefined && correctMinutes !== undefined
-    ? currentHours === correctHours && currentMinutes === correctMinutes
+  // Normalize correctHours to 12-hour format for comparison
+  const normalizedCorrectHours = correctHours !== undefined 
+    ? (correctHours > 12 ? correctHours - 12 : correctHours === 0 ? 12 : correctHours)
+    : undefined;
+
+  const isCorrect = showFeedback && normalizedCorrectHours !== undefined && correctMinutes !== undefined
+    ? currentHours === normalizedCorrectHours && currentMinutes === correctMinutes
     : undefined;
 
   const handleHoursChange = (value: number) => {
-    const newHours = value % 12;
+    // Keep value in 1-12 range for 12-hour clock
+    const newHours = value === 0 ? 12 : value;
     setCurrentHours(newHours);
     if (onTimeChange) {
       onTimeChange(newHours, currentMinutes);
@@ -46,8 +53,9 @@ export default function ClockVisualizer({
     }
   };
 
-  // Calculate angles
-  const hourAngle = ((currentHours % 12) * 30) + (currentMinutes * 0.5) - 90;
+  // Calculate angles for 12-hour clock
+  const displayHours = currentHours > 12 ? currentHours - 12 : currentHours === 0 ? 12 : currentHours;
+  const hourAngle = ((displayHours % 12) * 30) + (currentMinutes * 0.5) - 90;
   const minuteAngle = (currentMinutes * 6) - 90;
 
   // Clock size
@@ -72,7 +80,7 @@ export default function ClockVisualizer({
           {label}
         </h3>
         <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-          {(currentHours === 0 ? 12 : currentHours).toString().padStart(2, '0')}:{currentMinutes.toString().padStart(2, '0')}
+          {currentHours.toString().padStart(2, '0')}:{currentMinutes.toString().padStart(2, '0')}
         </div>
       </div>
 
@@ -164,12 +172,12 @@ export default function ClockVisualizer({
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Hours: {currentHours === 0 ? 12 : currentHours}
+              Hours: {currentHours}
             </label>
             <input
               type="range"
-              min="0"
-              max="11"
+              min="1"
+              max="12"
               value={currentHours}
               onChange={(e) => handleHoursChange(parseInt(e.target.value))}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
@@ -206,7 +214,7 @@ export default function ClockVisualizer({
                 <span>Try again!</span>
               </div>
               <p className="text-sm">
-                The correct time is {(correctHours === 0 ? 12 : correctHours)?.toString().padStart(2, '0')}:{correctMinutes?.toString().padStart(2, '0')}
+                The correct time is {normalizedCorrectHours?.toString().padStart(2, '0')}:{correctMinutes?.toString().padStart(2, '0')}
               </p>
             </div>
           )}

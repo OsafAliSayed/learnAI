@@ -40,6 +40,11 @@ export interface Exercise {
     minY?: number;
     maxY?: number;
     correctPoint?: { x: number; y: number };
+    validatePoint?: (point: { x: number; y: number }) => boolean;
+    feedbackMessage?: {
+      correct?: string;
+      incorrect?: string;
+    };
     correctNumerator?: number;
     correctDenominator?: number;
     correctHours?: number;
@@ -273,8 +278,8 @@ function renderExercise(
       );
 
     case 'cartesian':
-      if (!config?.correctPoint) {
-        return <div>Error: Invalid cartesian plane configuration</div>;
+      if (!config?.correctPoint && !config?.validatePoint) {
+        return <div>Error: Invalid Cartesian Plane Configuration - must provide either correctPoint or validatePoint</div>;
       }
       return (
         <CartesianPlane
@@ -284,8 +289,15 @@ function renderExercise(
           minY={config.minY}
           maxY={config.maxY}
           correctPoint={config.correctPoint}
+          validatePoint={config.validatePoint}
+          feedbackMessage={config.feedbackMessage}
           onPointSelect={(point: { x: number; y: number }) => {
-            const isCorrect = point.x === config.correctPoint!.x && point.y === config.correctPoint!.y ? 1 : 0;
+            let isCorrect: number;
+            if (config.validatePoint) {
+              isCorrect = config.validatePoint(point) ? 1 : 0;
+            } else {
+              isCorrect = point.x === config.correctPoint!.x && point.y === config.correctPoint!.y ? 1 : 0;
+            }
             onAnswer(isCorrect);
           }}
           showFeedback={showFeedback}
