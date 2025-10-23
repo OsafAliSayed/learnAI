@@ -1,5 +1,4 @@
 import { LessonGenerator } from "@/components/lesson-generator";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Sparkles } from "lucide-react";
 
 export default function Home() {

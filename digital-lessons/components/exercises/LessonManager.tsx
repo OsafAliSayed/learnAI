@@ -41,8 +41,6 @@ export default function LessonManager({
   onStartExercises,
   showExercisesButton = true,
   exercisesButtonText = "Ready for Exercises?",
-  customGradient = "from-blue-500 to-purple-500",
-  customHeaderGradient,
 }: LessonManagerProps) {
   const [expandedConcepts, setExpandedConcepts] = useState<Set<string>>(
     new Set(concepts.map(c => c.id))
@@ -89,8 +87,6 @@ export default function LessonManager({
       {/* Concepts */}
       {concepts.map((concept, index) => {
         const isExpanded = expandedConcepts.has(concept.id);
-        // Use a consistent color for all concept headers
-        const conceptColor = 'from-blue-500 to-purple-600';
 
         return (
           <section key={concept.id} className="bg-background/50 rounded-xl shadow-lg overflow-hidden backdrop-blur-sm">

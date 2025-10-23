@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { LessonRenderer } from '@/components/lesson-renderer';
 import { Button } from '@/components/ui/button';
-import { ThemeSwitcher } from '@/components/theme-switcher';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import type { Metadata } from 'next';
