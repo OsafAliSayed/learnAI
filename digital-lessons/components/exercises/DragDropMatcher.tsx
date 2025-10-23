@@ -111,11 +111,7 @@ export default function DragDropMatcher({
     return Object.values(matches).includes(rightId);
   };
 
-  const handleRetry = () => {
-    setMatches({});
-    setSelectedLeft(null);
-    setDraggedItem(null);
-  };
+  // No retry functionality - answers are shown directly
 
   return (
     <div className="space-y-4">
@@ -160,6 +156,11 @@ export default function DragDropMatcher({
                 {matchedRight && (
                   <div className="mt-2 p-2 bg-purple-100 dark:bg-purple-900/30 rounded text-sm text-purple-700 dark:text-purple-300">
                     → {matchedRight.content}
+                  </div>
+                )}
+                {matchStatus === false && showFeedback && (
+                  <div className="mt-2 p-2 bg-green-100 dark:bg-green-900/30 rounded text-sm text-green-700 dark:text-green-300">
+                    ✓ Correct match: {pairs.find(p => p.left.id === item.id)?.right.content}
                   </div>
                 )}
                 {matchStatus === true && (
@@ -219,15 +220,12 @@ export default function DragDropMatcher({
               <div className="text-red-600 dark:text-red-400 font-semibold">
                 <div className="flex items-center justify-center gap-2 mb-2 text-lg">
                   <span className="text-2xl">✗</span>
-                  <span>Some matches are incorrect. Review the highlighted items.</span>
+                  <span>Some matches are incorrect.</span>
                 </div>
               </div>
-              <button
-                onClick={handleRetry}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200 hover:scale-105 shadow-md"
-              >
-                🔄 Try Again
-              </button>
+              <div className="text-sm text-muted-foreground mt-2">
+                The correct answers are shown below.
+              </div>
             </div>
           )}
         </div>
