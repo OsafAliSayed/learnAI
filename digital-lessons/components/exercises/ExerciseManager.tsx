@@ -103,33 +103,33 @@ export default function ExerciseManager({
     const percentage = Math.round((score / totalExercises) * 100);
     
     return (
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg space-y-6">
+      <div className="bg-background border border-border/40 p-8 rounded-xl shadow-md space-y-6">
         <div className="text-center">
           <div className="text-6xl mb-4">
             {percentage >= 80 ? '🎉' : percentage >= 60 ? '👍' : '💪'}
           </div>
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+          <h2 className="text-3xl font-bold tracking-tight mb-2">
             {percentage >= 80 ? 'Excellent Work!' : percentage >= 60 ? 'Good Job!' : 'Keep Practicing!'}
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-6">
-            You scored <span className="font-bold text-blue-600 dark:text-blue-400">{score}</span> out of{' '}
+          <p className="text-xl text-muted-foreground mb-6">
+            You scored <span className="font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">{score}</span> out of{' '}
             <span className="font-bold">{totalExercises}</span>
           </p>
           
           {/* Score bar */}
-          <div className="relative h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-6">
+          <div className="relative h-8 bg-muted/30 rounded-full overflow-hidden mb-6">
             <div
               className={`h-full transition-all duration-1000 ease-out ${
                 percentage >= 80
-                  ? 'bg-gradient-to-r from-green-500 to-green-600'
+                  ? 'bg-gradient-to-r from-green-400 to-emerald-500'
                   : percentage >= 60
-                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600'
-                  : 'bg-gradient-to-r from-blue-500 to-blue-600'
+                  ? 'bg-gradient-to-r from-amber-400 to-orange-500'
+                  : 'bg-gradient-to-r from-blue-500 to-purple-600'
               }`}
               style={{ width: `${percentage}%` }}
             />
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-bold text-background">
                 {percentage}%
               </span>
             </div>
@@ -140,7 +140,7 @@ export default function ExerciseManager({
             <div className="flex justify-center">
               <button
                 onClick={handleRetry}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-200 hover:scale-105 shadow-md"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 hover:scale-105 shadow-md"
               >
                 🔄 Try Again
               </button>
@@ -165,7 +165,7 @@ export default function ExerciseManager({
       )}
 
       {/* Current Exercise */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg space-y-4" key={currentExercise?.id}>
+      <div className="bg-background border border-border/40 p-6 rounded-xl shadow-md backdrop-blur-sm space-y-4" key={currentExercise?.id}>
         {currentExercise && renderExercise(
           currentExercise,
           (isCorrect) => handleAnswer(currentExercise.id, isCorrect),
@@ -177,7 +177,7 @@ export default function ExerciseManager({
           <div className="flex justify-end pt-4">
             <button
               onClick={handleNext}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-200 hover:scale-105 shadow-md"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium py-2.5 px-6 rounded-lg transition-all duration-200 hover:scale-105 shadow-md"
             >
               {currentIndex < totalExercises - 1 ? 'Next Question →' : 'Finish'}
             </button>

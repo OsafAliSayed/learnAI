@@ -2,6 +2,7 @@
 
 import { useState, ReactNode } from 'react';
 import ExerciseButton from './ExerciseButton';
+// import { ChevronDown, ChevronRight } from 'lucide-react';
 
 export interface LessonConcept {
   id: string;
@@ -40,8 +41,6 @@ export default function LessonManager({
   onStartExercises,
   showExercisesButton = true,
   exercisesButtonText = "Ready for Exercises?",
-  customGradient = "from-blue-500 to-purple-500",
-  customHeaderGradient,
 }: LessonManagerProps) {
   const [expandedConcepts, setExpandedConcepts] = useState<Set<string>>(
     new Set(concepts.map(c => c.id))
@@ -59,13 +58,14 @@ export default function LessonManager({
     });
   };
 
-  const headerGradient = customHeaderGradient || customGradient;
+  // Use a consistent color theme
+  const headerGradient = "from-blue-500 to-purple-600";
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <header className={`bg-gradient-to-r ${headerGradient} text-white p-8 rounded-lg shadow-lg text-center`}>
-        <h1 className="text-4xl font-bold mb-2">{title}</h1>
+      <header className={`bg-gradient-to-r ${headerGradient} text-white p-8 rounded-xl shadow-lg text-center backdrop-blur-sm bg-opacity-90`}>
+        <h1 className="text-4xl font-bold tracking-tight mb-2">{title}</h1>
         {subtitle && (
           <p className="text-lg opacity-90">{subtitle}</p>
         )}
@@ -73,8 +73,8 @@ export default function LessonManager({
 
       {/* Introduction */}
       {introduction && (
-        <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <div className="text-gray-800 dark:text-gray-200">
+        <section className="bg-background/50 p-6 rounded-xl shadow-lg backdrop-blur-sm">
+          <div className="text-foreground">
             {typeof introduction === 'string' ? (
               <p className="text-lg leading-relaxed">{introduction}</p>
             ) : (
@@ -87,24 +87,16 @@ export default function LessonManager({
       {/* Concepts */}
       {concepts.map((concept, index) => {
         const isExpanded = expandedConcepts.has(concept.id);
-        const conceptColors = [
-          'from-blue-500 to-cyan-500',
-          'from-purple-500 to-pink-500',
-          'from-green-500 to-teal-500',
-          'from-orange-500 to-red-500',
-          'from-indigo-500 to-blue-500',
-        ];
-        const conceptColor = conceptColors[index % conceptColors.length];
 
         return (
-          <section key={concept.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+          <section key={concept.id} className="bg-background/50 rounded-xl shadow-lg overflow-hidden backdrop-blur-sm">
             {/* Concept Header */}
             <div
-              className={`bg-gradient-to-r ${conceptColor} text-white p-6 cursor-pointer hover:opacity-90 transition-opacity`}
+              className={`bg-muted/40 text-foreground p-5 cursor-pointer hover:bg-muted/60 transition-colors`}
               onClick={() => toggleConcept(concept.id)}
             >
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-xl font-medium tracking-tight">
                   {index + 1}. {concept.title}
                 </h2>
                 <span className="text-2xl">
@@ -117,7 +109,7 @@ export default function LessonManager({
             {isExpanded && (
               <div className="p-6 space-y-4">
                 {/* Main Content */}
-                <div className="text-gray-800 dark:text-gray-200">
+                <div className="text-foreground">
                   {typeof concept.content === 'string' ? (
                     <p className="leading-relaxed">{concept.content}</p>
                   ) : (
@@ -127,17 +119,17 @@ export default function LessonManager({
 
                 {/* Analogy */}
                 {concept.analogy && (
-                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded">
-                    <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
+                  <div className="bg-muted/20 p-4 rounded-md">
+                    <p className="text-sm font-semibold mb-2">
                       💡 Think of it this way:
                     </p>
-                    <p className="text-gray-700 dark:text-gray-300">{concept.analogy}</p>
+                    <p className="text-muted-foreground">{concept.analogy}</p>
                   </div>
                 )}
 
                 {/* Visual Demo */}
                 {concept.visualDemo && (
-                  <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+                  <div className="bg-muted/15 p-4 rounded-md backdrop-blur-sm">
                     {concept.visualDemo}
                   </div>
                 )}
@@ -145,21 +137,21 @@ export default function LessonManager({
                 {/* Examples */}
                 {concept.examples && concept.examples.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                    <h3 className="text-lg font-medium text-foreground">
                       📚 Examples:
                     </h3>
                     <div className="space-y-2">
                       {concept.examples.map((example, idx) => (
                         <div
                           key={idx}
-                          className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border-l-4 border-blue-500"
+                          className="bg-muted/20 p-4 rounded-md"
                         >
                           {example.title && (
-                            <p className="font-semibold text-blue-800 dark:text-blue-300 mb-1">
+                            <p className="font-medium mb-1">
                               {example.title}
                             </p>
                           )}
-                          <p className="text-gray-700 dark:text-gray-300">{example.content}</p>
+                          <p className="text-muted-foreground">{example.content}</p>
                         </div>
                       ))}
                     </div>
@@ -168,11 +160,11 @@ export default function LessonManager({
 
                 {/* Fun Facts */}
                 {concept.funFacts && concept.funFacts.length > 0 && (
-                  <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border-2 border-purple-300 dark:border-purple-700">
-                    <p className="text-sm font-semibold text-purple-800 dark:text-purple-300 mb-2">
+                  <div className="bg-muted/20 p-4 rounded-md">
+                    <p className="text-sm font-medium mb-2">
                       ✨ Fun Facts:
                     </p>
-                    <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
+                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                       {concept.funFacts.map((fact, idx) => (
                         <li key={idx}>{fact}</li>
                       ))}
@@ -187,9 +179,9 @@ export default function LessonManager({
 
       {/* Real World Applications */}
       {realWorldApplications && (
-        <section className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold mb-4">🌍 Real-World Applications</h2>
-          <div className="text-white/90">
+        <section className="bg-background/50 p-6 rounded-xl shadow-lg backdrop-blur-sm">
+          <h2 className="text-2xl font-medium tracking-tight mb-4">🌍 Real-World Applications</h2>
+          <div className="text-muted-foreground">
             {typeof realWorldApplications === 'string' ? (
               <p className="leading-relaxed">{realWorldApplications}</p>
             ) : (
@@ -201,9 +193,9 @@ export default function LessonManager({
 
       {/* Additional Fun Facts */}
       {additionalFunFacts && additionalFunFacts.length > 0 && (
-        <section className="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold mb-4">🎉 Did You Know?</h2>
-          <ul className="space-y-2">
+        <section className="bg-background/50 p-6 rounded-xl shadow-lg backdrop-blur-sm">
+          <h2 className="text-2xl font-medium tracking-tight mb-4">🎉 Did You Know?</h2>
+          <ul className="space-y-2 text-muted-foreground">
             {additionalFunFacts.map((fact, idx) => (
               <li key={idx} className="flex items-start">
                 <span className="mr-2">•</span>
@@ -216,10 +208,10 @@ export default function LessonManager({
 
       {/* Start Exercises Button */}
       {showExercisesButton && onStartExercises && (
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center pt-6">
           <ExerciseButton
             onClick={onStartExercises}
-            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg transform transition-all duration-200 hover:scale-105"
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-lg shadow-md transition-all duration-200 hover:scale-105"
           >
             {exercisesButtonText} 🚀
           </ExerciseButton>

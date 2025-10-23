@@ -4,10 +4,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Lesson } from '@/lib/types/database';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { Loader2, FileText, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, ArrowRight, Clock, CheckCircle2, XCircle, Sparkles } from 'lucide-react';
+
+// Helper function to clean title by removing markdown formatting
+function cleanTitle(title: string): string {
+  // Remove patterns like "**LESSON TITLE:** " or "LESSON TITLE: "
+  return title
+    .replace(/^\*\*[A-Z\s]+:\*\*\s*/i, '') // Remove **LESSON TITLE:** 
+    .replace(/^[A-Z\s]+:\s*/i, '')         // Remove LESSON TITLE:
+    .trim();
+}
 
 export function LessonGenerator() {
   const [outline, setOutline] = useState('');
@@ -94,129 +101,140 @@ export function LessonGenerator() {
     }
   };
 
-  const getStatusBadge = (status: Lesson['status']) => {
+  const getStatusIcon = (status: Lesson['status']) => {
     switch (status) {
       case 'generating':
-        return (
-          <Badge variant="outline" className="gap-1">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Generating
-          </Badge>
-        );
+        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
       case 'generated':
-        return (
-          <Badge variant="default" className="gap-1 bg-green-600">
-            <CheckCircle2 className="h-3 w-3" />
-            Generated
-          </Badge>
-        );
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case 'failed':
-        return (
-          <Badge variant="destructive" className="gap-1">
-            <XCircle className="h-3 w-3" />
-            Failed
-          </Badge>
-        );
+        return <XCircle className="h-4 w-4 text-red-500" />;
     }
   };
 
   return (
-    <div className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Generate a New Lesson</CardTitle>
-          <CardDescription>
-            Enter a lesson outline and we&apos;ll generate an interactive TypeScript-based lesson for you
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="outline" className="text-sm font-medium">
-              Lesson Outline
-            </label>
-            <textarea
-              id="outline"
-              value={outline}
-              onChange={(e) => setOutline(e.target.value)}
-              placeholder="Examples:&#10;• A 10 question pop quiz on Florida&#10;• A one-pager on how to divide with long division&#10;• An explanation of how the Cartesian Grid works"
-              className="w-full min-h-[120px] p-3 border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isGenerating}
-            />
+    <div className="space-y-12">
+      {/* Prompt Input Section */}
+      <div className="relative">
+        <div className="relative group">
+          <textarea
+            value={outline}
+            onChange={(e) => setOutline(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && e.metaKey) {
+                handleGenerate();
+              }
+            }}
+            placeholder="Describe the lesson you want to create...&#10;&#10;Examples:&#10;• A 10 question pop quiz on Florida&#10;• A one-pager on how to divide with long division&#10;• An explanation of how the Cartesian Grid works"
+            className="w-full min-h-[180px] p-6 rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all placeholder:text-muted-foreground/60 text-base"
+            disabled={isGenerating}
+          />
+          <div className="absolute bottom-4 right-4 flex items-center gap-3">
+            <Button
+              onClick={handleGenerate}
+              disabled={isGenerating || !outline.trim()}
+              size="lg"
+              className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg shadow-blue-500/25"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate Lesson
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
           </div>
-          {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-800 dark:text-red-300 text-sm">
-              {error}
-            </div>
-          )}
-          <Button
-            onClick={handleGenerate}
-            disabled={isGenerating || !outline.trim()}
-            className="w-full"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              'Generate Lesson'
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+        
+        {error && (
+          <div className="mt-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 text-red-800 dark:text-red-300 text-sm">
+            {error}
+          </div>
+        )}
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Lessons</CardTitle>
-          <CardDescription>
-            {lessons.length === 0
-              ? 'No lessons yet. Generate your first lesson above!'
-              : `${lessons.length} lesson${lessons.length !== 1 ? 's' : ''} generated`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {lessons.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-20" />
-              <p>Start by generating your first lesson</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {lessons.map((lesson) => (
-                <div
-                  key={lesson.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="font-medium truncate">{lesson.title}</h3>
-                      {getStatusBadge(lesson.status)}
+      {/* Lessons List */}
+      {lessons.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Recent Lessons</h2>
+            <span className="text-sm text-muted-foreground">
+              {lessons.length} {lessons.length === 1 ? 'lesson' : 'lessons'}
+            </span>
+          </div>
+          
+          <div className="space-y-3">
+            {lessons.map((lesson) => (
+              <div
+                key={lesson.id}
+                className="group rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm p-5 hover:bg-muted/20 transition-all"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h3 className="font-semibold text-base truncate">{cleanTitle(lesson.title)}</h3>
+                      <div className="flex items-center gap-2 text-sm">
+                        {getStatusIcon(lesson.status)}
+                        <span className="capitalize text-muted-foreground">{lesson.status}</span>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">
+                    
+                    <p className="text-sm text-muted-foreground line-clamp-2">
                       {lesson.outline}
                     </p>
+                    
                     {lesson.error_message && (
-                      <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                      <p className="text-xs text-red-500 line-clamp-1">
                         Error: {lesson.error_message}
                       </p>
                     )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(lesson.created_at).toLocaleString()}
-                    </p>
+                    
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+                      <Clock className="h-3 w-3" />
+                      {new Date(lesson.created_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
                   </div>
-                  {lesson.status === 'generated' && (
-                    <Link href={`/lessons/${lesson.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Lesson
+                  
+                  <div className="flex-shrink-0">
+                    {lesson.status === 'generated' ? (
+                      <Link href={`/lessons/${lesson.id}`}>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="rounded-xl"
+                        >
+                          View
+                          <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        disabled
+                        className="opacity-50 rounded-xl"
+                      >
+                        Pending
                       </Button>
-                    </Link>
-                  )}
+                    )}
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
