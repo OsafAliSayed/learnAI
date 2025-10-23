@@ -146,7 +146,7 @@ export const LESSON_GENERATION_PROMPT = `You are an expert educational content c
 15. ALL content must be contained within a scrollable wrapper to prevent height issues
 16. Example root structure:
     <div className="w-full h-full overflow-y-auto">
-      <div className="min-h-full p-6 bg-gradient-to-r from-blue-500 to-purple-500">
+      <div className="min-h-full p-6 bg-gradient-to-b from-background via-background to-muted/20">
         {{/* Your content here */}}
       </div>
     </div>
