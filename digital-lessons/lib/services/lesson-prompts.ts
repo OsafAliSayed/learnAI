@@ -166,7 +166,12 @@ Use ExerciseManager component (MANDATORY):
       showProgressTracker={{true}} 
       allowRetry={{true}} 
     />
-    <button onClick={{() => setCurrentSection('teaching')}}>Back to Lesson</button>
+    <button 
+      onClick={{() => setCurrentSection('teaching')}}
+      className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:scale-105 shadow-md"
+    >
+      ← Back to Lesson
+    </button>
   </>
 )}}
 \`\`\`
